@@ -28,44 +28,43 @@
 </body>
 
 <script>
-    var json_data = [
-        {
-            "userId": 1,
-            "id": 1,
-            "title": "delectus aut autem",
-            "completed": false
-        },
-        {
-            "userId": 1,
-            "id": 2,
-            "title": "yay its number 2",
-            "completed": false
-        },
-        {
-            "userId": 1,
-            "id": 3,
-            "title": "siuuuuu its number 3",
-            "completed": false
-        },
-        {
-            "userId": 1,
-            "id": 4,
-            "title": "sewy its number 4",
-            "completed": true
-        },
-        {
-            "userId": 1,
-            "id": 5,
-            "title": "finally 5...",
-            "completed": false
-        },
-    ]
+    // var json_data = [
+    //     {
+    //         "title": "delectus aut autem",
+    //         "completed": false
+    //     },
+    //     {
+    //         "title": "yay its number 2",
+    //         "completed": false
+    //     },
+    //     {
+    //         "title": "siuuuuu its number 3",
+    //         "completed": false
+    //     },
+    //     {
+    //         "title": "sewy its number 4",
+    //         "completed": false
+    //     },
+    //     {
+    //         "title": "finally 5...",
+    //         "completed": false
+    //     },
+    // ];
 
+    var json_data = JSON.parse(localStorage.getItem("json_data"));
     var myList = document.getElementById("todo-list");
 
-    json_data.forEach(element => {
-        newTodo(element.title);
-    });
+    if (json_data) {
+        json_data.forEach(element => {
+            if (element) {
+                newTodo(
+                    element.title,
+                    element.id
+                );
+            }
+            });
+    }
+
     registerEventListners();
     function registerEventListners() {
         var closeButtons = document.getElementsByClassName("delete");
@@ -76,12 +75,20 @@
     function deleteTodo() {
         var li = this.parentElement;
         myList.removeChild(li);
+        var json_temp = JSON.parse(localStorage.getItem('json_data'));
+        delete json_temp[li.dataset.id];
+        // how do we delete the item from json_temp without a unique id?
+        localStorage.setItem('json_data', JSON.stringify(json_temp));
     }
-    function newTodo(todoTitle) {
-        if (!todoTitle) {
+
+    function newTodo(todoTitle, todoID) {
+        if (!todoTitle && !todoID) {
             todoTitle = document.getElementById("todo-input").value;
+            var todoID = storeTodoLocal(todoTitle);
         }
+
         var listItem = document.createElement("li");
+        listItem.dataset.id = todoID;
         listItem.appendChild(document.createTextNode(todoTitle));
         var deleteLink = document.createElement("a");
         deleteLink.href = "#";
@@ -90,6 +97,27 @@
         listItem.appendChild(deleteLink);
         myList.appendChild(listItem);
         registerEventListners();
+    }
+
+    function storeTodoLocal(todoTitle) {
+        // retrieve and parse exisiting JSON from localstorage
+        var json_temp = JSON.parse(localStorage.getItem("json_data"));
+        if (!json_temp) {
+            json_temp = [];
+        }
+        var todoID = json_temp.length;
+        // add new todo to JSON
+        json_temp.push({
+            "id": todoID,
+            "title": todoTitle,
+            "completed": false
+        });
+
+        // stringify JSON and store in localstorage
+        localStorage.setItem("json_data", JSON.stringify(json_temp));
+
+        // return ID of new todo
+        return todoID
     }
 </script>
 
