@@ -5,6 +5,8 @@
         <meta charset="utf-8">
         <title>QA JS Intro</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     </head>
 
 <body>
@@ -12,47 +14,24 @@
         <h1>JavaScript Todo App</h1>
 
         <div class="row mt-4">
-            <div class="col-8">
+            <div class="col-md-8">
                 <ul id="todo-list">
                 </ul>
             </div>
         </div>
-        <div class="col-4">
+        <div class="col-md-4">
             <form>
                 <input type="text" class="form-control" id="todo-input" placeholder="Enter a todo">
                 <button onclick="newTodo()" class="addBtn btn btn-sm btn-primary form-control mt-3">Add</span>
             </form>
+            <button onclick="deleteAllTodos()" class="addBtn btn btn-sm btn-danger form-control mt-5">Delete All</span>
         </div>
 
     </div>
 </body>
 
 <script>
-    // var json_data = [
-    //     {
-    //         "title": "delectus aut autem",
-    //         "completed": false
-    //     },
-    //     {
-    //         "title": "yay its number 2",
-    //         "completed": false
-    //     },
-    //     {
-    //         "title": "siuuuuu its number 3",
-    //         "completed": false
-    //     },
-    //     {
-    //         "title": "sewy its number 4",
-    //         "completed": false
-    //     },
-    //     {
-    //         "title": "finally 5...",
-    //         "completed": false
-    //     },
-    // ];
-
     var json_data = JSON.parse(localStorage.getItem("json_data"));
-    var myList = document.getElementById("todo-list");
 
     if (json_data) {
         json_data.forEach(element => {
@@ -67,18 +46,17 @@
 
     registerEventListners();
     function registerEventListners() {
-        var closeButtons = document.getElementsByClassName("delete");
-        for (var i = 0; i < closeButtons.length; i++) {
-            closeButtons[i].addEventListener("click", deleteTodo, false);
-        }
+        $(".delete").on("click", function() {
+            var todoID = $(this).parent().attr('data-id');
+            deleteTodo(todoID);
+        })
     }
-    function deleteTodo() {
-        var li = this.parentElement;
-        myList.removeChild(li);
-        var json_temp = JSON.parse(localStorage.getItem('json_data'));
-        delete json_temp[li.dataset.id];
-        // how do we delete the item from json_temp without a unique id?
-        localStorage.setItem('json_data', JSON.stringify(json_temp));
+
+    function deleteTodo(todoID) {
+        $("li[data-id=" + todoID + "]").fadeOut();
+        var json_temp = JSON.parse(localStorage.getItem("json_data"));
+        delete json_temp[todoID];
+        localStorage.setItem("json_data", JSON.stringify(json_temp));
     }
 
     function newTodo(todoTitle, todoID) {
@@ -87,15 +65,9 @@
             var todoID = storeTodoLocal(todoTitle);
         }
 
-        var listItem = document.createElement("li");
-        listItem.dataset.id = todoID;
-        listItem.appendChild(document.createTextNode(todoTitle));
-        var deleteLink = document.createElement("a");
-        deleteLink.href = "#";
-        deleteLink.className = "btn btn-sm btn-danger m-1 delete";
-        deleteLink.appendChild(document.createTextNode("Delete"));
-        listItem.appendChild(deleteLink);
-        myList.appendChild(listItem);
+        var todoHTML = '<li style="display:none" data-id="' +todoID + '">' + todoTitle + '<a href="#" class="btn btn-sm btn-danger m-1 delete">Delete</a></li>';
+        $("#todo-list").append(todoHTML);
+        $("li[data-id=" + todoID + "]").fadeIn();
         registerEventListners();
     }
 
@@ -118,6 +90,13 @@
 
         // return ID of new todo
         return todoID
+    }
+
+    function deleteAllTodos() {
+        if (confirm("Are you sure you want to delete all todos?")) {
+            localStorage.removeItem("json_data");
+            $("#todo-list").empty();
+        }
     }
 </script>
 
